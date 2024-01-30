@@ -168,3 +168,9 @@ data/predict/*.p
 logs 
 config
 plugins
+
+# MAC
+.DS_Store
+
+# model
+*.h5

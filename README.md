@@ -1,6 +1,8 @@
-# Airflow ML Pipeline for Traffic Signs Classification
+# Machine Learning Pipeline with Apache Airflow
 
-## Overview
+This project implements a machine learning pipeline using Apache Airflow for orchestration and Docker Compose for managing the underlying infrastructure. The pipeline includes tasks for downloading and preprocessing a traffic signs dataset, training a machine learning model, evaluating its performance, and deciding to automatically deploy depending on a threshold.
+
+An accompanying notebook is available under `notebooks/german_traffic_signs_classification.ipynb`
 
 ## Usage
 
@@ -8,36 +10,43 @@ To use this pipeline for local development, follow the steps below:
 
 1. Ensure that your Docker Engine has sufficient memory allocated, as running the pipeline may require more memory in certain cases.
 
-2. Be in the project directory
+2. Be in the project directory.
 
-3. Before the first Airflow run, prepare the environment by executing the following steps:
+3. **Using Docker Compose Directly:**
 
-   - If you are working on Linux, specify the AIRFLOW_UID by running the command:
+   - If you are working on Linux, set the AIRFLOW_UID by running the command:
+     ```bash
+     echo -e "AIRFLOW_UID=$(id -u)" > .env
+     ```
+   - Perform the database migration and create the initial user account with the following command:
+     ```bash
+     docker compose up airflow-init
+     ```
+     The created user account will have the login `airflow` and the password `airflow`.
+   - Start Airflow and build custom images to run tasks in Docker containers:
+     ```bash
+     docker compose up --build
+     ```
 
-   ```bash
-   echo -e "AIRFLOW_UID=$(id -u)" > .env
-   ```
+4. **Using Makefile (Alternative):**
 
-   - Perform the database migration and create the initial user account by running the command:
+   - If you prefer using the Makefile for simplified commands:
+     - Run `make init` to set the AIRFLOW_UID and perform the initial database setup.
+     - Run `make start` to start Airflow and build custom images.
 
-   ```bash
-   docker compose up airflow-init
-   ```
+5. Access the Airflow web interface in your browser at http://localhost:8080. Username and Password is by default 'airflow'
 
-   The created user account will have the login `airflow` and the password `airflow`.
+6. Trigger the Directed Acyclic Graph (DAG) to initiate the pipeline execution.
 
-4. Start Airflow and build custom images to run tasks in Docker-containers:
-
-   ```bash
-   docker compose up --build
-   ```
-
-5. Access the Airflow web interface in your browser at http://localhost:8080.
-
-6. Trigger the DAG to initiate the pipeline execution.
-
-7. When you are finished working and want to clean up your environment, run:
+7. When you have completed your work and want to clean up your environment, run:
 
    ```bash
    docker compose down --volumes --rmi all
+
+   ```
+
+   or alternatively
+
+   ```bash
+       make clean
    ```
