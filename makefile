@@ -3,6 +3,7 @@
 
 # Define environment setup
 init:
+	# printf "AIRFLOW_UID=$(id -u)" > .env
 	docker compose up airflow-init
 # Build and start Airflow with custom images
 start:

@@ -12,12 +12,13 @@ To use this pipeline for local development, follow the steps below:
 
 2. Be in the project directory.
 
-3. **Using Docker Compose Directly:**
-
-   - If you are working on Linux, set the AIRFLOW_UID by running the command:
+3. If you are working on Linux, set the AIRFLOW_UID by running the command:
      ```bash
      echo -e "AIRFLOW_UID=$(id -u)" > .env
      ```
+
+4. **Using Docker Compose Directly:**
+
    - Perform the database migration and create the initial user account with the following command:
      ```bash
      docker compose up airflow-init
@@ -28,17 +29,18 @@ To use this pipeline for local development, follow the steps below:
      docker compose up --build
      ```
 
-4. **Using Makefile (Alternative):**
+5. **Using Makefile (Alternative):**
 
    - If you prefer using the Makefile for simplified commands:
      - Run `make init` to set the AIRFLOW_UID and perform the initial database setup.
      - Run `make start` to start Airflow and build custom images.
 
-5. Access the Airflow web interface in your browser at http://localhost:8080. Username and Password is by default 'airflow'
+6. Access the Airflow web interface in your browser at http://localhost:8080. 
+  - Username and Password is by default 'airflow'
 
-6. Trigger the Directed Acyclic Graph (DAG) to initiate the pipeline execution.
+7. Trigger the Directed Acyclic Graph (DAG) to initiate the pipeline execution.
 
-7. When you have completed your work and want to clean up your environment, run:
+8. When you have completed your work and want to clean up your environment, run:
 
    ```bash
    docker compose down --volumes --rmi all
