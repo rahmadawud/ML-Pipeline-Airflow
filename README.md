@@ -2,7 +2,6 @@
 
 This project implements a machine learning pipeline using Apache Airflow for orchestration and Docker Compose for managing the underlying infrastructure. The pipeline includes tasks for downloading and preprocessing a traffic signs dataset, training a machine learning model, evaluating its performance, and deciding to automatically deploy depending on a threshold.
 
-An accompanying notebook is available under `notebooks/german_traffic_signs_classification.ipynb`
 
 ## Usage
 
