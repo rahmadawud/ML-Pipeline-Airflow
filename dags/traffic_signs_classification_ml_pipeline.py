@@ -1,9 +1,11 @@
 """ Airflow DAG to train and evaluate a traffic signs classification model """
 
 
-from airflow.decorators import dag
+from airflow.decorators import dag, task
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python_operator import BranchPythonOperator
+from airflow.operators.dummy_operator import DummyOperator
 from airflow.utils.dates import days_ago
 from model_utils import model_eval, train_model
 from data_utils import data_preparation, download_and_unzip
@@ -15,9 +17,11 @@ raw_data_path = "/opt/airflow/data/raw/"
 preprocessed_data_path = "/opt/airflow/data/preprocessed/"
 output_path = "/opt/airflow/data/output/"
 data_url = "https://d17h27t6h515a5.cloudfront.net/topher/2017/February/5898cd6f_traffic-signs-data/traffic-signs-data.zip"
+NUM_EPOCHS = 10
+
 
 # Define the DAG
-@dag("Traffic-Signs-Classification", start_date=days_ago(0), schedule="@daily", catchup=False)
+@dag("Traffic-Signs-Classification", start_date=days_ago(0), schedule="@monthly", catchup=False)
 def ml_pipeline():
     # Download and unzip task
     download_and_unzip_task = PythonOperator(
@@ -47,7 +51,7 @@ def ml_pipeline():
     model_train_task = PythonOperator(
         task_id="model_train",
         python_callable=train_model,
-        op_kwargs={"data_path": preprocessed_data_path, "output_path": output_path, "num_epochs": 1},
+        op_kwargs={"data_path": preprocessed_data_path, "output_path": output_path, "num_epochs": NUM_EPOCHS},
     )
     # Model evaluation task
     model_eval_task = PythonOperator(
@@ -56,7 +60,32 @@ def ml_pipeline():
         op_kwargs={"data_path": preprocessed_data_path, "output_path": output_path},
     )
 
+    # Branching task
+    def branch_task(**kwargs):
+        if kwargs["ti"].xcom_pull(task_ids="model_eval", key="model_eval_accuracy") > 0.8:
+            return "deploy_model"
+        else:
+            return "do_not_deploy_model"
+    
+    check_accuracy = BranchPythonOperator(
+        task_id="check_accuracy",
+        python_callable=branch_task,
+        provide_context=True
+    )
+
+    # dummy deploy task
+    deploy_model = DummyOperator(
+        task_id="deploy_model",
+    )
+    # dummy do not deploy task
+    do_not_deploy_model = DummyOperator(
+        task_id="do_not_deploy_model",
+    )
+
     download_and_unzip_task >> data_prep_task >> model_train_task >> model_eval_task
+    model_eval_task >> check_accuracy
+    check_accuracy >> [deploy_model, do_not_deploy_model]
+
 
 
 ml_pipeline()

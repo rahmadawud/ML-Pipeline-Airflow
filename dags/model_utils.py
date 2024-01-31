@@ -154,7 +154,7 @@ def train_model(data_path: str, output_path: str, num_epochs) -> None:
     model.save(f"{output_path}/model.h5")
 
 
-def model_eval(data_path: str, output_path: str) -> None:
+def model_eval(data_path: str, output_path: str, **kwargs) -> None:
     """
     Evaluate the model performance on the test data
 
@@ -179,6 +179,10 @@ def model_eval(data_path: str, output_path: str) -> None:
     score = model.evaluate(X_test, y_test, verbose=0)
     print("Test loss:", score[0])
     print("Test accuracy:", score[1])
+
+    # save the test accuracy to xcom
+    kwargs["ti"].xcom_push(key="model_eval_accuracy", value=score[1])
+
 
     y_pred = model.predict(X_test, verbose=2)
     y_pred = np.argmax(y_pred, axis=1)
